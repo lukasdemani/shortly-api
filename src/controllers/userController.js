@@ -35,3 +35,33 @@ export async function getUser(req, res) {
     return res.sendStatus(500);
   }
 }
+
+export async function getUserById(req, res) {
+  const { id } = req.params;
+
+  try {
+    const userById = await connection.query(
+      `SELECT u.id, u.name, (
+        SELECT COUNT (uu."userId")
+          FROM "urlsUsers" uu
+          WHERE uu."userId" = $1) AS "visitCount",
+        FROM users u
+        `,[id]
+    )
+
+    const visits = await connection.query(
+      `SELECT urls.*, (
+        SELECT COUNT (uu."userId")
+          FROM "urlsUsers" uu
+          WHERE uu."userId" = $1 AND uu."urlId" = urls.id) AS "visitCount"
+      )
+        FROM urls
+        WHERE urls.id = 
+      `, [id]
+    )
+
+    res.send({ ...user.rows, visits })
+  }catch(err){
+    res.sendStatus(500);
+  }
+}
